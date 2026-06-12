@@ -1397,13 +1397,13 @@ function genLevel1(){
         var wrongs=[];for(var j=0;j<allProducts.length;j++){if(allProducts[j].id!==p.id)wrongs.push(allProducts[j]);}
         if(wrongs.length<3)continue;
         var wo=pick(wrongs,3);
-        if(p.genericName&&p.genericName.length>4){
+        if(p.genericName&&p.genericName.length>4&&p.genericName!==p.name){
             var short=p.genericName.length>20?p.genericName.substring(0,20)+'…':p.genericName;
             qs.push({type:'components',question:'通用名「'+short+'」对应哪个产品？',
                 hint:p.type==='vaccine'?'疫苗':p.type==='antibody'?'抗体':'药品',
                 correct:[p.id],productId:p.id,
                 options:shuffle([{id:p.id,text:p.name},{id:wo[0].id,text:wo[0].name},{id:wo[1].id,text:wo[1].name},{id:wo[2].id,text:wo[2].name}])});
-        } else if(p.components&&p.components.length>4){
+        } else if(p.components&&p.components.length>4&&p.components!=="—"){
             var short2=p.components.length>25?p.components.substring(0,25)+'…':p.components;
             qs.push({type:'components',question:'含「'+short2+'」成分的产品是？',
                 hint:p.type==='vaccine'?'疫苗':p.type==='antibody'?'抗体':'药品',
