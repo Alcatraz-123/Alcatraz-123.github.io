@@ -179,11 +179,13 @@ document.getElementById('downloadBtn').addEventListener('click',function(){
     var ctx=canvas.getContext('2d');
     var w=canvas.width,h=canvas.height;
     var fontSize=150;
-    ctx.font='bold '+fontSize+'px "Noto Sans SC",sans-serif';
-    ctx.fillStyle='rgba(160,100,60,0.14)';
+    // Try multiple Chinese fonts for compatibility
+    ctx.font='bold '+fontSize+'px "Noto Sans SC","Microsoft YaHei","PingFang SC","SimHei",sans-serif';
+    ctx.fillStyle='rgba(140,90,50,0.25)';
     ctx.textAlign='center';
     ctx.textBaseline='middle';
-    // Place watermark at multiple vertical positions across the canvas
+    ctx.globalAlpha=0.25;
+    // Place watermark across the entire canvas
     var cols=2,rows=7;
     var cellW=w/cols,cellH=h/rows;
     for(var r=0;r<rows;r++){
@@ -197,6 +199,7 @@ document.getElementById('downloadBtn').addEventListener('click',function(){
         ctx.restore();
       }
     }
+    ctx.globalAlpha=1.0;
     var link=document.createElement('a');
     link.download='富能维C宣传海报.png';
     link.href=canvas.toDataURL('image/png');
