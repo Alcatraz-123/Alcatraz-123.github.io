@@ -11,7 +11,7 @@
 body{font-family:'Noto Sans SC',sans-serif;background:#FFF9F2;color:#333;max-width:750px;margin:0 auto;-webkit-font-smoothing:antialiased}
 
 /* 水印背景 - SVG矢量，清晰 */
-.wm-bg{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+Cjx0ZXh0IHg9IjE1MCIgeT0iMTEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9InJnYmEoMTYwLDEwMCw2MCwwLjA5KSIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1LDE1MCwxMDApIiBsZXR0ZXItc3BhY2luZz0iNiI+6Kej5Yaz5pa55qGI6YOoPC90ZXh0Pgo8L3N2Zz4=");background-repeat:repeat;background-position:center}
+
 
 .cover{background:linear-gradient(160deg,#FF5722,#FF7043 35%,#FF9800 70%,#FFC107);padding:48px 28px 36px;text-align:center;position:relative;overflow:hidden}
 .cover::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;background:rgba(255,255,255,.08);border-radius:50%}
@@ -174,42 +174,34 @@ body{font-family:'Noto Sans SC',sans-serif;background:#FFF9F2;color:#333;max-wid
 document.getElementById('downloadBtn').addEventListener('click',function(){
   var btn=this;var area=document.getElementById('capture-area');
   btn.style.display='none';
-  // Create watermark overlay as a real DOM element
+  
+  // Generate watermark image using an offscreen canvas
+  var wmCanvas=document.createElement('canvas');
+  wmCanvas.width=500;wmCanvas.height=300;
+  var wmCtx=wmCanvas.getContext('2d');
+  wmCtx.font='bold 36px sans-serif';
+  wmCtx.fillStyle='rgba(140,90,50,0.18)';
+  wmCtx.textAlign='center';
+  wmCtx.textBaseline='middle';
+  wmCtx.translate(250,150);
+  wmCtx.rotate(-15*Math.PI/180);
+  // Draw Chinese text - use unicode escapes for max compatibility
+  wmCtx.fillText('\u89e3\u51b3\u65b9\u6848\u90e8',0,0);
+  wmCtx.setTransform(1,0,0,1,0,0);
+  var wmDataUrl=wmCanvas.toDataURL('image/png');
+  
+  // Create overlay div with tiled watermark background
   var wm=document.createElement('div');
   wm.id='wm-overlay';
-  wm.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;'
-    +'background-image:repeating-linear-gradient('
-    +'0deg,transparent,transparent 280px,'
-    +'rgba(140,90,50,0.13) 280px,rgba(140,90,50,0.13) 281px,transparent 281px,transparent 560px),'
-    +'repeating-linear-gradient('
-    +'90deg,transparent,transparent 400px,'
-    +'rgba(140,90,50,0.13) 400px,rgba(140,90,50,0.13) 401px,transparent 401px,transparent 800px);'
-    +'overflow:hidden;';
-  // Add text spans as watermark
-  var positions=[
-    {x:'10%',y:'10%'},{x:'60%',y:'10%'},
-    {x:'10%',y:'25%'},{x:'60%',y:'25%'},
-    {x:'10%',y:'40%'},{x:'60%',y:'40%'},
-    {x:'10%',y:'55%'},{x:'60%',y:'55%'},
-    {x:'10%',y:'70%'},{x:'60%',y:'70%'},
-    {x:'10%',y:'85%'},{x:'60%',y:'85%'},
-    {x:'35%',y:'17%'},{x:'35%',y:'47%'},{x:'35%',y:'77%'}
-  ];
-  positions.forEach(function(p){
-    var span=document.createElement('span');
-    span.textContent='解决方案部';
-    span.style.cssText='position:absolute;left:'+p.x+';top:'+p.y+';'
-      +'font-size:48px;font-weight:bold;color:rgba(140,90,50,0.15);'
-      +'transform:rotate(-15deg);white-space:nowrap;letter-spacing:6px;'
-      +'font-family:"Noto Sans SC","Microsoft YaHei","PingFang SC","SimHei",sans-serif;';
-    wm.appendChild(span);
-  });
-  // Make area relative for absolute positioning
+  wm.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;'
+    +'pointer-events:none;z-index:9998;'
+    +'background-image:url('+wmDataUrl+');'
+    +'background-repeat:repeat;'
+    +'background-size:500px 300px;';
   area.style.position='relative';
   area.appendChild(wm);
 
   html2canvas(area,{scale:3,useCORS:true,backgroundColor:'#FFF9F2',logging:false}).then(function(canvas){
-    // Remove watermark overlay
     area.removeChild(wm);
     var link=document.createElement('a');
     link.download='富能维C宣传海报.png';
