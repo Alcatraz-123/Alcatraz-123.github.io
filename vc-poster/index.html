@@ -174,45 +174,50 @@ body{font-family:'Noto Sans SC',sans-serif;background:#FFF9F2;color:#333;max-wid
 document.getElementById('downloadBtn').addEventListener('click',function(){
   var btn=this;var area=document.getElementById('capture-area');
   btn.style.display='none';
+  // Create watermark overlay as a real DOM element
+  var wm=document.createElement('div');
+  wm.id='wm-overlay';
+  wm.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;'
+    +'background-image:repeating-linear-gradient('
+    +'0deg,transparent,transparent 280px,'
+    +'rgba(140,90,50,0.13) 280px,rgba(140,90,50,0.13) 281px,transparent 281px,transparent 560px),'
+    +'repeating-linear-gradient('
+    +'90deg,transparent,transparent 400px,'
+    +'rgba(140,90,50,0.13) 400px,rgba(140,90,50,0.13) 401px,transparent 401px,transparent 800px);'
+    +'overflow:hidden;';
+  // Add text spans as watermark
+  var positions=[
+    {x:'10%',y:'10%'},{x:'60%',y:'10%'},
+    {x:'10%',y:'25%'},{x:'60%',y:'25%'},
+    {x:'10%',y:'40%'},{x:'60%',y:'40%'},
+    {x:'10%',y:'55%'},{x:'60%',y:'55%'},
+    {x:'10%',y:'70%'},{x:'60%',y:'70%'},
+    {x:'10%',y:'85%'},{x:'60%',y:'85%'},
+    {x:'35%',y:'17%'},{x:'35%',y:'47%'},{x:'35%',y:'77%'}
+  ];
+  positions.forEach(function(p){
+    var span=document.createElement('span');
+    span.textContent='解决方案部';
+    span.style.cssText='position:absolute;left:'+p.x+';top:'+p.y+';'
+      +'font-size:48px;font-weight:bold;color:rgba(140,90,50,0.15);'
+      +'transform:rotate(-15deg);white-space:nowrap;letter-spacing:6px;'
+      +'font-family:"Noto Sans SC","Microsoft YaHei","PingFang SC","SimHei",sans-serif;';
+    wm.appendChild(span);
+  });
+  // Make area relative for absolute positioning
+  area.style.position='relative';
+  area.appendChild(wm);
+
   html2canvas(area,{scale:3,useCORS:true,backgroundColor:'#FFF9F2',logging:false}).then(function(canvas){
-    // Create SVG watermark image
-    var wmSvg='<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120">'
-      +'<text x="200" y="75" text-anchor="middle" font-family="sans-serif" font-size="48" font-weight="bold" '
-      +'fill="rgba(140,90,50,0.22)" transform="rotate(-15,200,60)" letter-spacing="6">\u89e3\u51b3\u65b9\u6848\u90e8</text>'
-      +'</svg>';
-    var wmBlob=new Blob([wmSvg],{type:'image/svg+xml;charset=utf-8'});
-    var wmUrl=URL.createObjectURL(wmBlob);
-    var wmImg=new Image();
-    wmImg.onload=function(){
-      var ctx=canvas.getContext('2d');
-      var w=canvas.width,h=canvas.height;
-      var cols=2,rows=7;
-      var cellW=w/cols,cellH=h/rows;
-      for(var r=0;r<rows;r++){
-        for(var c=0;c<cols;c++){
-          var cx=cellW*(c+0.5)-wmImg.width/2;
-          var cy=cellH*(r+0.5)-wmImg.height/2;
-          ctx.drawImage(wmImg,cx,cy);
-        }
-      }
-      URL.revokeObjectURL(wmUrl);
-      var link=document.createElement('a');
-      link.download='富能维C宣传海报.png';
-      link.href=canvas.toDataURL('image/png');
-      link.click();
-      btn.style.display='flex';
-    };
-    wmImg.onerror=function(){
-      URL.revokeObjectURL(wmUrl);
-      // Fallback: save without watermark
-      var link=document.createElement('a');
-      link.download='富能维C宣传海报.png';
-      link.href=canvas.toDataURL('image/png');
-      link.click();
-      btn.style.display='flex';
-    };
-    wmImg.src=wmUrl;
+    // Remove watermark overlay
+    area.removeChild(wm);
+    var link=document.createElement('a');
+    link.download='富能维C宣传海报.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    btn.style.display='flex';
   }).catch(function(e){
+    area.removeChild(wm);
     alert('生成失败，请重试');
     btn.style.display='flex';
   });
